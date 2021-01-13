@@ -1,13 +1,14 @@
 const express = require("express")
 const app = express()
+const expressWs = require("express-ws")(app)
 const mongoose = require("mongoose")
 require("dotenv").config()
-const ApiRouter = require("./src/routers/api/apiRouter")
+const mainRouter = require("./src/routers/mainRouter")
 const PORT = process.env.PORT || 5000
 
 
 app.use(express.json())
-app.use("/api", ApiRouter)
+app.use("/", mainRouter)
 
 
 const startServer = async () => {
