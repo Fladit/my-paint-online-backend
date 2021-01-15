@@ -9,13 +9,13 @@ class AuthService {
     async registration(req, res) {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            res.status(400).send(errors.array())
+            res.status(400).json(errors.array())
         }
         try {
             const username = req.body.username
             const isUserExist = (await User.findOne({username: username})) !== null
             if (isUserExist)
-                res.status(400).send({message: `User ${username} is already exist!`})
+                res.status(400).json({message: `User ${username} is already exist!`})
             const password = req.body.password
             const salt = bcrypt.genSaltSync()
             const hash = bcrypt.hashSync(password, salt)
@@ -34,11 +34,11 @@ class AuthService {
             await user.save()
 
             const token = AuthService.createJWT({username: user.username, roles: user.roles}, "1h")
-            res.send({token})
+            res.json({token})
         }
         catch (e) {
             console.log(e.message)
-            res.status(400).send({message: e.message})
+            res.status(400).json({message: e.message})
         }
 
     }
@@ -47,38 +47,38 @@ class AuthService {
         try {
             const errors = validationResult(req)
             if (!errors.isEmpty()) {
-                res.send(errors.array())
+                res.json(errors.array())
             }
             const {username, password} = req.body
             const user = await User.findOne({username})
             if (!user)
-                res.status(400).send({message: `User ${username} is not found.`})
+                res.status(400).json({message: `User ${username} is not found.`})
             const isSuccessAuth = bcrypt.compareSync(password, user.password)
             if (!isSuccessAuth) {
-                res.status(400).send({message: "Incorrect password."})
+                res.status(400).json({message: "Incorrect password."})
             }
             const token = AuthService.createJWT({username: user.username, roles: user.roles}, "1h")
-            res.send({token})
+            res.json({token})
         }
         catch (e) {
-            res.status(400).send({message: e.message})
+            res.status(400).json({message: e.message})
         }
     }
 
     async authentication(req, res) {
         const bearerToken = req.headers.authorization
         if (!bearerToken)
-            res.status(401).send("Authorization token is empty")
+            res.status(401).json("Authorization token is empty")
         const token = bearerToken.split(" ")[1]
         if (!token)
-            res.status(401).send("Authorization token is empty")
+            res.status(401).json("Authorization token is empty")
         try {
             const decodedUser = jwt.verify(token, process.env.PRIVATE_KEY)
-            res.status(200).send({message: "Token is valid"})
+            res.status(200).json({message: "Token is valid"})
         }
         catch (e) {
             console.log(e.message)
-            res.status(400).send({message: e.message})
+            res.status(400).json({message: e.message})
         }
     }
 

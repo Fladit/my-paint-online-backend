@@ -4,9 +4,10 @@ const expressWs = require("express-ws")(app)
 const mongoose = require("mongoose")
 require("dotenv").config()
 const mainRouter = require("./src/routers/mainRouter")
+const cors = require("./src/middleware/cors.middleware")
 const PORT = process.env.PORT || 5000
 
-
+app.use(cors)
 app.use(express.json())
 app.use("/", mainRouter)
 
