@@ -65,23 +65,6 @@ class AuthService {
         }
     }
 
-    async authentication(req, res) {
-        const bearerToken = req.headers.authorization
-        if (!bearerToken)
-            res.status(401).json("Authorization token is empty")
-        const token = bearerToken.split(" ")[1]
-        if (!token)
-            res.status(401).json("Authorization token is empty")
-        try {
-            const decodedUser = jwt.verify(token, process.env.PRIVATE_KEY)
-            res.status(200).json({message: "Token is valid"})
-        }
-        catch (e) {
-            console.log(e.message)
-            res.status(400).json({message: e.message})
-        }
-    }
-
     static createJWT(user, expiresIn) {
         const token = jwt.sign(user, process.env.PRIVATE_KEY, {expiresIn})
         console.log("token: ", token)

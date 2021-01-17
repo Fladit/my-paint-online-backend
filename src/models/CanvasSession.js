@@ -1,7 +1,7 @@
 const {Schema, model} = require("mongoose")
 
 const CanvasSessionSchema = new Schema({
-    name: {
+    sessionID: {
         type: String,
         required: true,
     },
