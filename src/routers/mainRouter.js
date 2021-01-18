@@ -6,10 +6,8 @@ const drawSocketService = require("../services/DrawSocketService")
 
 router.use("/api", ApiRouter)
 router.ws("/draw/:uid", (ws, req) => {
-    const sessionID = req.param.uid
-    ws.on("open", () => {
-        drawSocketService.onOpenEvent(sessionID, ws)
-    })
+    const sessionID = req.params.uid
+    drawSocketService.onOpenEvent(sessionID, ws)
 
     ws.on("message", (message) => {
         drawSocketService.onMessageEvent(sessionID, ws, message)

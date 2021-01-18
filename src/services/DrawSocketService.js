@@ -6,6 +6,7 @@ class DrawSocketService {
     clients = {}
     canvases = {}
     onOpenEvent(sessionID, ws) {
+        console.log("open event")
         if (this.clients.hasOwnProperty(sessionID)) {
             this.clients[sessionID].push(ws)
         }
@@ -21,10 +22,12 @@ class DrawSocketService {
     }
 
     onMessageEvent(sessionID, ws, message) {
+        message = JSON.parse(message)
+        console.log(message.method)
         switch (message.method) {
             case "startConnection": {
-                delete message.token
-                this.messageBroadcasting(ws, message)
+                delete message.authorization
+                this.messageBroadcasting(sessionID, ws, message)
                 break;
             }
             case "closeConnection": {
@@ -45,11 +48,18 @@ class DrawSocketService {
         }
     }
 
-    messageBroadcasting(ws, message) {
-        for (const client in this.clients) {
+    messageBroadcasting(sessionID, ws, message) {
+        console.log("point")
+        console.log(this.clients[sessionID])
+        this.clients[sessionID].forEach(client => {
+            console.log(client !== ws)
             if (client !== ws)
-                client.send(message)
-        }
+            {
+                console.log("message is sent")
+                client.send(JSON.stringify(message))
+            }
+        })
+
     }
 
 }
