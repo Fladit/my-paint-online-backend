@@ -65,11 +65,61 @@ class AuthService {
         }
     }
 
+    async authentication(req, res) {
+        const token = AuthService.getTokenWithValidation(req, res)
+        try {
+            jwt.verify(token, process.env.PRIVATE_KEY)
+            res.status(200).send()
+        }
+        catch (e) {
+            res.status(401).json(e)
+        }
+    }
+
+    async refresh(req, res) {
+        const accessToken = AuthService.getTokenWithValidation(req, res)
+        const refreshToken = req.body.refreshToken
+        if (!refreshToken) {
+            res.status(401).json({message: "No refresh token"})
+        }
+        try {
+            jwt.verify(accessToken, process.env.PRIVATE_KEY)
+            res.status(400).json({message: "Access token is not expired"})
+        }
+        catch (e) {
+            if (e.name === "TokenExpiredError") {
+                try {
+                    const userData = jwt.verify(refreshToken, process.env.PRIVATE_KEY)
+                    const accessToken = AuthService.createJWT(userData, "24h")
+                    const refreshToken = AuthService.createJWT(userData, "30d")
+                    res.status(200).json({accessToken, refreshToken})
+                }
+                catch (e) {
+                    res.status(401).json(e)
+                }
+            }
+            res.status(401).json(e)
+        }
+    }
+
     static createJWT(user, expiresIn) {
         const token = jwt.sign(user, process.env.PRIVATE_KEY, {expiresIn})
         console.log("token: ", token)
         return token
     }
+
+    static getTokenWithValidation(req, res) {
+        const bearer = req.headers.authorization
+        if (!bearer) {
+            res.status(401).json({message: "No authorization header"})
+        }
+        const token = bearer.split(" ")[1]
+        if (!token) {
+            res.status(400).json({message: "A bearer token is expected"})
+        }
+        return token
+    }
+
 
 }
 

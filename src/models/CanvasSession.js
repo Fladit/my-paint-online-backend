@@ -16,6 +16,12 @@ const CanvasSessionSchema = new Schema({
     owner: {
         type: Schema.Types.ObjectId,
         ref: "User",
+    },
+    image64: {
+        type: String,
+    },
+    password: {
+        type: String,
     }
 })
 
