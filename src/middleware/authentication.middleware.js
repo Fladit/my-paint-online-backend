@@ -1,19 +1,23 @@
-import * as jwt from "jsonwebtoken";
+const jwt = require("jsonwebtoken")
 
 function authentication(req, res, next) {
     const bearerToken = req.headers.authorization
+    //console.log(bearerToken, req.body)
     if (!bearerToken)
-        res.status(400).json("Authorization token is empty")
+        return res.status(400).json("Authorization token is empty")
     const token = bearerToken.split(" ")[1]
     if (!token)
-        res.status(400).json("Authorization token is empty")
+        return res.status(400).json("Authorization token is empty")
     try {
-        const decodedUser = jwt.verify(token, process.env.PRIVATE_KEY)
+        const decoded = jwt.verify(token, process.env.PRIVATE_KEY)
+        req.current = {user: decoded}
         next()
     }
     catch (e) {
         console.log(e.message)
-        res.status(401).json(e)
+        return res.status(401).json(e)
     }
 }
+
+module.exports = authentication
 

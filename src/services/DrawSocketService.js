@@ -70,22 +70,22 @@ class CanvasDraw {
     static drawHandler(canvas, message) {
         switch (message.figure) {
             case "brush": {
-                this.drawBrush(canvas, message.parameters)
+                this.drawBrush(canvas.getContext("2d"), message.parameters)
                 break;
             }
 
             case "line": {
-                this.drawLine(canvas, message.parameters)
+                this.drawLine(canvas.getContext("2d"), message.parameters)
                 break;
             }
 
             case "circle": {
-                this.drawCircle(canvas, message.parameters)
+                this.drawCircle(canvas.getContext("2d"), message.parameters)
                 break;
             }
 
             case "rectangle": {
-                this.drawRectangle(canvas, message.parameters)
+                this.drawRectangle(canvas.getContext("2d"), message.parameters)
                 break;
             }
 
@@ -94,45 +94,44 @@ class CanvasDraw {
         }
     }
 
-    static drawBrush(canvas, parameters) {
+    static drawBrush(canvasContext, parameters) {
         const {points, lineWidth, strokeStyle} = parameters
         const startPoint = points[0]
-        console.log("start")
-        canvas.beginPath()
-        canvas.moveTo(startPoint.x, startPoint.y)
-        canvas.lineWidth = lineWidth
-        canvas.strokeStyle = strokeStyle
+        canvasContext.beginPath()
+        canvasContext.moveTo(startPoint.x, startPoint.y)
+        canvasContext.lineWidth = lineWidth
+        canvasContext.strokeStyle = strokeStyle
         for (let i = 1; i < points.length; i++) {
             const point = points[i]
-            canvas.lineTo(point.x, point.y)
-            canvas.stroke()
+            canvasContext.lineTo(point.x, point.y)
+            canvasContext.stroke()
         }
     }
 
-    static drawLine(canvas, parameters) {
+    static drawLine(canvasContext, parameters) {
         const {x1, y1, x2, y2, strokeStyle, lineWidth} = parameters
-        canvas.beginPath()
-        canvas.moveTo(x1, y1)
-        canvas.strokeStyle = strokeStyle
-        canvas.lineWidth = lineWidth
-        canvas.lineTo(x2, y2)
-        canvas.stroke()
+        canvasContext.beginPath()
+        canvasContext.moveTo(x1, y1)
+        canvasContext.strokeStyle = strokeStyle
+        canvasContext.lineWidth = lineWidth
+        canvasContext.lineTo(x2, y2)
+        canvasContext.stroke()
     }
 
-    static drawCircle(canvas, parameters) {
+    static drawCircle(canvasContext, parameters) {
         const {x, y, w, h, fillStyle} = parameters
-        canvas.beginPath()
-        canvas.arc(x, y, Math.sqrt((w*w + h*h)), 0, 2* Math.PI, false)
-        canvas.fillStyle = fillStyle
-        canvas.fill()
+        canvasContext.beginPath()
+        canvasContext.arc(x, y, Math.sqrt((w*w + h*h)), 0, 2* Math.PI, false)
+        canvasContext.fillStyle = fillStyle
+        canvasContext.fill()
     }
 
-    static drawRectangle(canvas, parameters) {
+    static drawRectangle(canvasContext, parameters) {
         const {x, y, w, h, fillStyle} = parameters
-        canvas.beginPath()
-        canvas.fillStyle = fillStyle
-        canvas.rect(x, y, w, h)
-        canvas.fill()
+        canvasContext.beginPath()
+        canvasContext.fillStyle = fillStyle
+        canvasContext.rect(x, y, w, h)
+        canvasContext.fill()
     }
 }
 

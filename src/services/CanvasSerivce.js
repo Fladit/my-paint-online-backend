@@ -7,7 +7,7 @@ class CanvasService {
             let sessionID = req.body.sessionID
             const user = req.current.user
             if (!sessionID)
-                res.status(400).send()
+                return res.status(400).send()
             const isExist = !!await CanvasSession.findOne({sessionID: sessionID})
             if (isExist) {
                 sessionID = uuid.v4()
@@ -17,10 +17,11 @@ class CanvasService {
                 users: [user.id],
                 owner: user.id,
             })
-            res.status(200).json({sessionID})
+            await canvasSession.save()
+            return res.status(200).json({sessionID})
         }
         catch (e) {
-            res.status(400).json({message: e.message})
+            return res.status(400).json({message: e.message})
         }
     }
 }

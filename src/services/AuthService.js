@@ -9,13 +9,13 @@ class AuthService {
     async registration(req, res) {
         const errors = validationResult(req)
         if (!errors.isEmpty()) {
-            res.status(400).json(errors.array())
+            return res.status(400).json(errors.array())
         }
         try {
             const username = req.body.username
             const isUserExist = (await User.findOne({username: username})) !== null
             if (isUserExist)
-                res.status(400).json({message: `User ${username} is already exist!`})
+                return res.status(400).json({message: `User ${username} is already exist!`})
             const password = req.body.password
             const salt = bcrypt.genSaltSync()
             const hash = bcrypt.hashSync(password, salt)
@@ -34,11 +34,11 @@ class AuthService {
             await user.save()
 
             const token = AuthService.createJWT({username: user.username, roles: user.roles}, "1h")
-            res.json({token})
+            return res.json({token})
         }
         catch (e) {
             console.log(e.message)
-            res.status(400).json({message: e.message})
+            return res.status(400).json({message: e.message})
         }
 
     }
