@@ -1,18 +1,34 @@
 const {createCanvas} = require("canvas")
 const width = 900
 const height = 600
+const CanvasSession = require("../models/CanvasSession")
 
 class DrawSocketService {
     clients = {}
     canvases = {}
-    onOpenEvent(sessionID, ws) {
-        console.log("open event")
+    onOpenEvent(sessionID, token, ws) {
+        console.log("open event", token)
+        //Закрывать сокет, если не вложили токен
+        if (!token)
+            ws.close()
         if (this.clients.hasOwnProperty(sessionID)) {
             this.clients[sessionID].push(ws)
         }
         else {
             this.clients[sessionID] = [ws]
             this.canvases[sessionID] = createCanvas(width, height)
+
+            /*
+            CanvasSession.findOne({sessionID: sessionID}).then(session => {
+                console.log("then")
+                this.setCanvasSession(session, sessionID, ws)
+            }).catch(err => {
+                console.log("catch")
+            })
+
+             */
+
+
         }
     }
 
@@ -61,6 +77,22 @@ class DrawSocketService {
             })
         }
 
+    }
+
+    setCanvasSession(session, sessionID, ws) {
+        if (session) {
+            this.clients[sessionID] = [ws]
+            if (session.image64) {
+                const canvas = createCanvas(width, height)
+                const img = new Image()
+                img.src = session.image64
+                img.onload = () => {
+                    canvas.getContext("2d").drawImage(img, 0, 0, width, height)
+                    this.canvases[sessionID] = canvas
+                }
+            }
+            else this.canvases[sessionID] = createCanvas(width, height)
+        }
     }
 
 }
