@@ -6,7 +6,7 @@ const CanvasSession = require("../models/CanvasSession")
 class DrawSocketService {
     clients = {}
     canvases = {}
-    onOpenEvent(sessionID, token, ws) {
+    async onOpenEvent(sessionID, token, ws) {
         console.log("open event", token)
         //Закрывать сокет, если не вложили токен
         if (!token)
@@ -15,18 +15,23 @@ class DrawSocketService {
             this.clients[sessionID].push(ws)
         }
         else {
+            //console.log("else")
+            /*
             this.clients[sessionID] = [ws]
             this.canvases[sessionID] = createCanvas(width, height)
 
-            /*
-            CanvasSession.findOne({sessionID: sessionID}).then(session => {
-                console.log("then")
-                this.setCanvasSession(session, sessionID, ws)
-            }).catch(err => {
-                console.log("catch")
-            })
-
              */
+            try {
+                //console.log("canvas session search")
+                const canvasSession = await CanvasSession.findOne({sessionID: sessionID})
+                if (canvasSession)
+                    this.setCanvasSession(canvasSession, sessionID, ws)
+                else ws.close(1008, `Canvas Session ${sessionID} is not exist!`)
+            }
+            catch (err) {
+                console.log("catch", err)
+                ws.close(1008, err.message)
+            }
 
 
         }
@@ -44,6 +49,7 @@ class DrawSocketService {
             case "startConnection": {
                 delete message.authorization
                 this.messageBroadcasting(sessionID, ws, message)
+                this.sendCurrentImage(sessionID, ws)
                 break;
             }
             case "closeConnection": {
@@ -53,6 +59,7 @@ class DrawSocketService {
             case "drawEvent": {
                 CanvasDraw.drawHandler(this.canvases[sessionID], message)
                 this.messageBroadcasting(sessionID, ws, message)
+                CanvasSession.findOneAndUpdate({sessionID: sessionID}, {image64: this.canvases[sessionID].toDataURL()})
                 break;
             }
 
@@ -93,6 +100,12 @@ class DrawSocketService {
             }
             else this.canvases[sessionID] = createCanvas(width, height)
         }
+    }
+    sendCurrentImage(sessionID, ws) {
+        ws.send(JSON.stringify({
+            method: "setStartImage",
+            image: this.canvases[sessionID].toDataURL()
+        }))
     }
 
 }
