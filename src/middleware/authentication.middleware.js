@@ -2,7 +2,6 @@ const jwt = require("jsonwebtoken")
 
 function authentication(req, res, next) {
     const bearerToken = req.headers.authorization
-    //console.log(bearerToken, req.body)
     if (!bearerToken)
         return res.status(400).json("Authorization token is empty")
     const token = bearerToken.split(" ")[1]
@@ -19,5 +18,21 @@ function authentication(req, res, next) {
     }
 }
 
-module.exports = authentication
+function socketAuthentication(ws, req) {
+    const token = req.query.token
+    if (!token)
+        return ws.close("Authorization token is empty")
+    try {
+        const decoded = jwt.verify(token, process.env.PRIVATE_KEY)
+        req.current = {user: decoded}
+    }
+    catch (e) {
+        console.log(e.message)
+        return ws.close(e.message)
+    }
+
+}
+
+
+module.exports = {authentication, socketAuthentication}
 

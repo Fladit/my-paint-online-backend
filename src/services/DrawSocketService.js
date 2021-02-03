@@ -6,10 +6,10 @@ const CanvasSession = require("../models/CanvasSession")
 class DrawSocketService {
     clients = {}
     canvases = {}
-    async onOpenEvent(sessionID, token, ws) {
-        console.log("open event", token)
+    async onOpenEvent(sessionID, user, ws) {
+        console.log("open event, username: ", user.username, " sessionID:", sessionID)
         //Закрывать сокет, если не вложили токен
-        if (!token)
+        if (!user)
             ws.close()
         if (this.clients.hasOwnProperty(sessionID)) {
             this.clients[sessionID].push(ws)
@@ -31,10 +31,13 @@ class DrawSocketService {
             catch (err) {
                 console.log("catch", err)
                 ws.close(1008, err.message)
+                return ;
             }
 
 
         }
+
+        this.sendConnectionNotification(sessionID, user.username, ws)
     }
 
     onCloseEvent(sessionID, ws) {
@@ -107,6 +110,15 @@ class DrawSocketService {
             image: this.canvases[sessionID].toDataURL()
         }))
     }
+
+    sendConnectionNotification(sessionID, username, ws) {
+        const message = {
+            method: "startConnection",
+            username: username,
+        }
+        this.messageBroadcasting(sessionID, ws, message)
+        this.sendCurrentImage(sessionID, ws)
+}
 
 }
 
