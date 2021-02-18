@@ -24,6 +24,15 @@ class CanvasService {
             return res.status(400).json({message: e.message})
         }
     }
+
+    async getSession(req, res) {
+        const uid = req.params.uid
+        const session = await CanvasSession.findOne({sessionID: uid})
+        if (session) {
+            return res.status(200).json(session);
+        }
+        res.status(404).send()
+    }
 }
 
 module.exports = new CanvasService()
