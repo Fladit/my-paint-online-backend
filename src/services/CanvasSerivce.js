@@ -26,8 +26,8 @@ class CanvasService {
     }
 
     async getSession(req, res) {
-        const uid = req.params.uid
-        const session = await CanvasSession.findOne({sessionID: uid})
+        const sessionID = req.params.id
+        const session = await CanvasSession.findOne({sessionID})
         if (session) {
             return res.status(200).json(session);
         }

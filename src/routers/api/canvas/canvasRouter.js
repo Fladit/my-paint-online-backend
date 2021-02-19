@@ -1,10 +1,8 @@
 const express = require("express")
 const router = express.Router()
-const CanvasSession = require("../../../models/CanvasSession")
-const CanvasService = require("../../../services/CanvasSerivce")
-const AuthenticationMiddleware = require("../../../middleware/authentication.middleware").authentication
+const SessionsRouter = require("./sessions/sessionsRouter")
 
 //router.use(AuthenticationMiddleware)
-router.post("/createSession", AuthenticationMiddleware, CanvasService.createCanvasSession)
-router.post("/sessions/:uid", AuthenticationMiddleware, CanvasService.getSession)
+router.use("/sessions", SessionsRouter)
+
 module.exports = router
