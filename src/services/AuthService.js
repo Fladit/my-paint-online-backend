@@ -67,6 +67,8 @@ class AuthService {
 
     async authentication(req, res) {
         const token = AuthService.getTokenWithValidation(req, res)
+        if (!token)
+            return ;
         try {
             jwt.verify(token, process.env.PRIVATE_KEY)
             res.status(200).send()
@@ -78,6 +80,8 @@ class AuthService {
 
     async refresh(req, res) {
         const accessToken = AuthService.getTokenWithValidation(req, res)
+        if (!accessToken)
+            return ;
         const refreshToken = req.body.refreshToken
         if (!refreshToken) {
             res.status(401).json({message: "No refresh token"})
@@ -112,10 +116,12 @@ class AuthService {
         const bearer = req.headers.authorization
         if (!bearer) {
             res.status(401).json({message: "No authorization header"})
+            return ""
         }
         const token = bearer.split(" ")[1]
         if (!token) {
-            res.status(400).json({message: "A bearer token is expected"})
+            res.status(401).json({message: "A bearer token is expected"})
+            return ""
         }
         return token
     }
