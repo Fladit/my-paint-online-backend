@@ -4,6 +4,11 @@ const User = require("../models/User")
 const Role = require("../models/Role")
 const jwt = require("jsonwebtoken")
 
+const lifeTime = {
+    ACCESS: "1h",
+    REFRESH: "30d",
+}
+
 class AuthService {
 
     async registration(req, res) {
@@ -33,8 +38,8 @@ class AuthService {
             })
             await user.save()
 
-            const token = AuthService.createJWT({username: user.username, roles: user.roles}, "1h")
-            return res.json({token})
+            const [access, refresh] = AuthService.createJWTtokens({username: user.username, roles: user.roles})
+            return res.json({access, refresh})
         }
         catch (e) {
             console.log(e.message)
@@ -57,8 +62,8 @@ class AuthService {
             if (!isSuccessAuth) {
                 res.status(400).json({message: "Incorrect password."})
             }
-            const token = AuthService.createJWT({username: user.username, roles: user.roles}, "1h")
-            res.json({token})
+            const [access, refresh] = AuthService.createJWTtokens({username: user.username, roles: user.roles})
+            res.json({access, refresh})
         }
         catch (e) {
             res.status(400).json({message: e.message})
@@ -88,15 +93,14 @@ class AuthService {
         }
         try {
             jwt.verify(accessToken, process.env.PRIVATE_KEY)
-            res.status(400).json({message: "Access token is not expired"})
+            res.status(200).json({message: "Access token is not expired"})
         }
         catch (e) {
             if (e.name === "TokenExpiredError") {
                 try {
                     const userData = jwt.verify(refreshToken, process.env.PRIVATE_KEY)
-                    const accessToken = AuthService.createJWT(userData, "24h")
-                    const refreshToken = AuthService.createJWT(userData, "30d")
-                    res.status(200).json({accessToken, refreshToken})
+                    const [access, refresh] = AuthService.createJWTtokens(userData)
+                    res.status(200).json({access, refresh})
                 }
                 catch (e) {
                     res.status(401).json(e)
@@ -106,9 +110,15 @@ class AuthService {
         }
     }
 
+    static createJWTtokens(user) {
+        const accessToken = this.createJWT(user, lifeTime.ACCESS)
+        const refreshToken = this.createJWT(user, lifeTime.REFRESH)
+        return [accessToken, refreshToken]
+    }
+
     static createJWT(user, expiresIn) {
         const token = jwt.sign(user, process.env.PRIVATE_KEY, {expiresIn})
-        console.log("token: ", token)
+        //console.log("token: ", token)
         return token
     }
 
