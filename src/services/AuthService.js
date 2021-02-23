@@ -5,7 +5,7 @@ const Role = require("../models/Role")
 const jwt = require("jsonwebtoken")
 
 const lifeTime = {
-    ACCESS: "1h",
+    ACCESS: "1m",
     REFRESH: "30d",
 }
 
@@ -87,26 +87,28 @@ class AuthService {
         const accessToken = AuthService.getTokenWithValidation(req, res)
         if (!accessToken)
             return ;
-        const refreshToken = req.body.refreshToken
+        const refreshToken = req.body.refresh
         if (!refreshToken) {
-            res.status(401).json({message: "No refresh token"})
+            return res.status(401).json({message: "No refresh token"})
         }
         try {
             jwt.verify(accessToken, process.env.PRIVATE_KEY)
-            res.status(200).json({message: "Access token is not expired"})
+            return res.status(200).json({message: "Access token is not expired"})
         }
         catch (e) {
             if (e.name === "TokenExpiredError") {
                 try {
-                    const userData = jwt.verify(refreshToken, process.env.PRIVATE_KEY)
+                    const userDecoded = jwt.verify(refreshToken, process.env.PRIVATE_KEY)
+                    const userData = {username: userDecoded.username, roles: userDecoded.roles}
                     const [access, refresh] = AuthService.createJWTtokens(userData)
-                    res.status(200).json({access, refresh})
+                    console.log("refresh")
+                    return res.status(200).json({access, refresh})
                 }
                 catch (e) {
-                    res.status(401).json(e)
+                    return res.status(401).json({message: "Refresh token is expired"})
                 }
             }
-            res.status(401).json(e)
+            res.status(401).json({message: "Access token is invalid"})
         }
     }
 
@@ -118,7 +120,6 @@ class AuthService {
 
     static createJWT(user, expiresIn) {
         const token = jwt.sign(user, process.env.PRIVATE_KEY, {expiresIn})
-        //console.log("token: ", token)
         return token
     }
 

@@ -13,7 +13,7 @@ function authentication(req, res, next) {
         next()
     }
     catch (e) {
-        console.log(e.message)
+        console.log("auth middleware: ", e.message)
         return res.status(401).json(e)
     }
 }
